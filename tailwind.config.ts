@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,15 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom wood-themed colors
+				wood: {
+					light: '#E8D0A9',
+					DEFAULT: '#C69C6D',
+					dark: '#8B5A2B',
+					darker: '#704114',
+					accent: '#A67C52',
+					muted: '#F5EFE6'
 				}
 			},
 			borderRadius: {
