@@ -31,8 +31,7 @@ const Index = () => {
   const [params, setParams] = useState<PanelParams>({
     minPlankLength: 20,
     maxPlankLength: 100,
-    minPlankWidth: 5,
-    maxPlankWidth: 20,
+    plankWidth: 10,
     panelWidth: 60,
     panelLength: 200,
     woodBins: [
@@ -210,15 +209,6 @@ const Index = () => {
       
       {/* Actions rapides */}
       <div className="flex justify-center mb-8 space-x-4">
-        <Button
-          onClick={handleGeneratePanel}
-          disabled={isGenerating}
-          className="bg-wood-dark hover:bg-wood-darker text-white"
-          size="lg"
-        >
-          {isGenerating ? "Génération en cours..." : "Générer un panneau"}
-        </Button>
-        
         <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
           <DialogTrigger asChild>
             <Button variant="outline" size="lg">
@@ -309,7 +299,12 @@ const Index = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Colonne de gauche: Paramètres */}
         <div className="md:col-span-1 space-y-6">
-          <PanelParameters params={params} onChange={handleParamsUpdate} />
+          <PanelParameters 
+            params={params} 
+            onChange={handleParamsUpdate} 
+            onGenerate={handleGeneratePanel}
+            isGenerating={isGenerating}
+          />
           <WoodBins bins={params.woodBins} onChange={handleWoodBinsUpdate} />
         </div>
         

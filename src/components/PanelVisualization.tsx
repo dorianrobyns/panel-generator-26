@@ -72,14 +72,7 @@ const PanelVisualization: React.FC<PanelVisualizationProps> = ({ panel }) => {
       ctx.lineWidth = 1;
       ctx.strokeRect(x, y, width, height);
       
-      // Ajouter un numéro sur la planche si assez large
-      if (width > 20 && height > 15) {
-        ctx.fillStyle = getContrastColor(plank.color);
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(`${plank.id}`, x + width / 2, y + height / 2);
-      }
+      // Plus de numéros sur les planches
     });
     
   }, [panel]);

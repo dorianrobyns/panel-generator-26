@@ -46,6 +46,10 @@ const AssemblyInstructions: React.FC<AssemblyInstructionsProps> = ({ panel, wood
     color: "#cccccc" 
   };
 
+  // Déterminer si c'est une nouvelle rangée
+  const isNewRow = currentPlank > 0 && 
+    panel.planks[currentPlank].positionY !== panel.planks[currentPlank - 1].positionY;
+
   const goToNextPlank = () => {
     if (currentPlank < totalPlanks - 1) {
       setCurrentPlank(currentPlank + 1);
@@ -102,6 +106,11 @@ const AssemblyInstructions: React.FC<AssemblyInstructionsProps> = ({ panel, wood
             <div>
               <div className="mb-3">
                 <span className="font-medium">Planche n°{plank.id}</span>
+                {isNewRow && (
+                  <div className="mt-2 p-2 bg-yellow-100 text-yellow-800 rounded-md">
+                    Nouvelle rangée ! Passez à la rangée suivante.
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between">
@@ -123,8 +132,12 @@ const AssemblyInstructions: React.FC<AssemblyInstructionsProps> = ({ panel, wood
                   <span className="font-medium">{plank.length.toFixed(1)} cm</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Position:</span>
-                  <span className="font-medium">{plank.position.toFixed(1)} cm du bord gauche</span>
+                  <span>Position X:</span>
+                  <span className="font-medium">{plank.positionX.toFixed(1)} cm du bord gauche</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Position Y:</span>
+                  <span className="font-medium">{plank.positionY.toFixed(1)} cm du bord supérieur</span>
                 </div>
               </div>
             </div>
@@ -132,7 +145,7 @@ const AssemblyInstructions: React.FC<AssemblyInstructionsProps> = ({ panel, wood
             <div className="flex flex-col justify-center">
               <div className="h-10 w-full bg-gray-200 rounded-md relative">
                 {panel.planks.map((p, i) => {
-                  const startPos = (p.position / panel.length) * 100;
+                  const startPos = (p.positionX / panel.length) * 100;
                   const width = (p.length / panel.length) * 100;
                   return (
                     <div 
@@ -156,51 +169,6 @@ const AssemblyInstructions: React.FC<AssemblyInstructionsProps> = ({ panel, wood
                 Panneau: {panel.width} × {panel.length} cm
               </div>
             </div>
-          </div>
-        </div>
-        
-        {/* Liste complète des planches */}
-        <div>
-          <h3 className="text-lg font-medium mb-3">Liste complète des planches</h3>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[60px]">N°</TableHead>
-                  <TableHead>Bac</TableHead>
-                  <TableHead>Couleur</TableHead>
-                  <TableHead className="text-right">Longueur (cm)</TableHead>
-                  <TableHead className="text-right">Position (cm)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {panel.planks.map((plank) => {
-                  const woodBin = woodBins.find(bin => bin.id === plank.binId);
-                  return (
-                    <TableRow 
-                      key={plank.id}
-                      className={currentPlank === panel.planks.indexOf(plank) ? "bg-muted" : ""}
-                      onClick={() => goToPlank(panel.planks.indexOf(plank))}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <TableCell className="font-medium">{plank.id}</TableCell>
-                      <TableCell>{woodBin?.name || "Inconnu"}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <div 
-                            className="w-4 h-4 rounded-full mr-2" 
-                            style={{ backgroundColor: plank.color }}
-                          />
-                          <span className="text-xs">{plank.color}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">{plank.length.toFixed(1)}</TableCell>
-                      <TableCell className="text-right">{plank.position.toFixed(1)}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
           </div>
         </div>
       </CardContent>

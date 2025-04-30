@@ -9,9 +9,11 @@ import { PanelParams } from '@/utils/panelGenerator';
 interface PanelParametersProps {
   params: PanelParams;
   onChange: (params: PanelParams) => void;
+  onGenerate: () => void;
+  isGenerating: boolean;
 }
 
-const PanelParameters: React.FC<PanelParametersProps> = ({ params, onChange }) => {
+const PanelParameters: React.FC<PanelParametersProps> = ({ params, onChange, onGenerate, isGenerating }) => {
   // Fonction de mise à jour des paramètres
   const updateParam = (key: keyof PanelParams, value: number) => {
     onChange({ ...params, [key]: value });
@@ -47,27 +49,15 @@ const PanelParameters: React.FC<PanelParametersProps> = ({ params, onChange }) =
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="minPlankWidth">Largeur min. des planches (cm)</Label>
-              <Input
-                id="minPlankWidth"
-                type="number"
-                min="2"
-                value={params.minPlankWidth || 5}
-                onChange={(e) => updateParam('minPlankWidth', parseFloat(e.target.value) || 0)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="maxPlankWidth">Largeur max. des planches (cm)</Label>
-              <Input
-                id="maxPlankWidth"
-                type="number"
-                min={(params.minPlankWidth || 5) + 1}
-                value={params.maxPlankWidth || 20}
-                onChange={(e) => updateParam('maxPlankWidth', parseFloat(e.target.value) || 0)}
-              />
-            </div>
+          <div>
+            <Label htmlFor="plankWidth">Largeur des planches (cm)</Label>
+            <Input
+              id="plankWidth"
+              type="number"
+              min="2"
+              value={params.plankWidth || 10}
+              onChange={(e) => updateParam('plankWidth', parseFloat(e.target.value) || 0)}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -92,6 +82,14 @@ const PanelParameters: React.FC<PanelParametersProps> = ({ params, onChange }) =
               />
             </div>
           </div>
+          
+          <Button
+            onClick={onGenerate}
+            disabled={isGenerating}
+            className="w-full bg-wood-dark hover:bg-wood-darker text-white mt-4"
+          >
+            {isGenerating ? "Génération en cours..." : "Générer un panneau"}
+          </Button>
         </div>
       </CardContent>
     </Card>

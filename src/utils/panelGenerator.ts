@@ -21,8 +21,7 @@ export interface Plank {
 export interface PanelParams {
   minPlankLength: number;
   maxPlankLength: number;
-  minPlankWidth: number;
-  maxPlankWidth: number;
+  plankWidth: number;
   panelWidth: number;
   panelLength: number;
   woodBins: WoodBin[];
@@ -38,7 +37,7 @@ export interface Panel {
 export const generatePanel = (params: PanelParams): Panel => {
   const { 
     minPlankLength, maxPlankLength, 
-    minPlankWidth = 5, maxPlankWidth = 20, 
+    plankWidth = 10, 
     panelLength, panelWidth, woodBins 
   } = params;
   
@@ -49,7 +48,7 @@ export const generatePanel = (params: PanelParams): Panel => {
   }
   
   // Vérification des paramètres de dimension
-  if (minPlankLength <= 0 || maxPlankLength <= 0 || minPlankWidth <= 0 || maxPlankWidth <= 0 || panelLength <= 0 || panelWidth <= 0) {
+  if (minPlankLength <= 0 || maxPlankLength <= 0 || plankWidth <= 0 || panelLength <= 0 || panelWidth <= 0) {
     throw new Error("Toutes les dimensions doivent être positives");
   }
   
@@ -57,12 +56,12 @@ export const generatePanel = (params: PanelParams): Panel => {
     throw new Error("La longueur minimum doit être inférieure à la longueur maximum");
   }
 
-  if (minPlankWidth > maxPlankWidth) {
-    throw new Error("La largeur minimum doit être inférieure à la largeur maximum");
+  if (plankWidth > panelWidth) {
+    throw new Error("La largeur des planches doit être inférieure à la largeur du panneau");
   }
   
-  if (minPlankLength > panelLength || minPlankWidth > panelWidth) {
-    throw new Error("Les dimensions minimum des planches doivent être inférieures aux dimensions du panneau");
+  if (minPlankLength > panelLength) {
+    throw new Error("La longueur minimum des planches doit être inférieure à la longueur du panneau");
   }
 
   // Initialisation du panneau
@@ -72,19 +71,17 @@ export const generatePanel = (params: PanelParams): Panel => {
     planks: []
   };
 
-  // Pour le moment, nous implémentons une version simplifiée où les planches sont disposées en rangées
-  // (on pourrait améliorer cela avec un algorithme plus complexe de placement 2D)
-  
   let plankId = 1;
   let currentY = 0;
   
+  // Calculer le nombre de rangées en fonction de la largeur fixe
+  const rowCount = Math.floor(panelWidth / plankWidth);
+  const remainingWidth = panelWidth - (rowCount * plankWidth);
+  const adjustedPlankWidth = plankWidth + (remainingWidth / rowCount); // Distribuer l'espace restant
+  
   // On remplit le panneau en rangées jusqu'à ce que toute la hauteur soit couverte
-  while (currentY < panelWidth) {
-    // Déterminer la hauteur de cette rangée (largeur de planche)
-    const rowHeight = Math.min(
-      panelWidth - currentY,
-      Math.max(minPlankWidth, Math.random() * (maxPlankWidth - minPlankWidth) + minPlankWidth)
-    );
+  for (let row = 0; row < rowCount; row++) {
+    const rowHeight = adjustedPlankWidth;
     
     // Remplir une rangée avec des planches horizontales
     let currentX = 0;
