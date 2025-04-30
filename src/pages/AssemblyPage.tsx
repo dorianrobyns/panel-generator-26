@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Panel } from '@/utils/panelGenerator';
 import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { loadCurrentPanel, loadCurrentParams } from '@/utils/storage';
+import { Progress } from "@/components/ui/progress";
 
 const AssemblyPage = () => {
   const [panel, setPanel] = useState<Panel | null>(null);
@@ -70,6 +71,7 @@ const AssemblyPage = () => {
   };
   
   const totalPlanks = panel.planks.length;
+  const progress = Math.round((currentPlank + 1) / totalPlanks * 100);
   
   // Déterminer si c'est une nouvelle rangée
   const isNewRow = currentPlank > 0 && 
@@ -85,8 +87,8 @@ const AssemblyPage = () => {
         </Button>
       </div>
       
-      <Card className="mb-6">
-        <CardHeader>
+      <Card className="mb-6 shadow-md">
+        <CardHeader className="pb-2">
           <CardTitle className="flex justify-between">
             <span>Étape {currentPlank + 1} sur {totalPlanks}</span>
             <div className="flex items-center space-x-2">
@@ -121,10 +123,10 @@ const AssemblyPage = () => {
               )}
               
               <h3 className="text-xl font-medium mb-4">Planche #{plank.id}</h3>
-              <div className="space-y-4 text-lg">
-                <div className="flex justify-between">
+              <div className="grid grid-cols-2 gap-4 text-lg">
+                <div className="flex items-center">
                   <span className="font-medium">Bac:</span>
-                  <div className="flex items-center">
+                  <div className="flex items-center ml-2">
                     <div 
                       className="w-6 h-6 rounded-full mr-2" 
                       style={{ backgroundColor: woodBin.color }}
@@ -132,32 +134,28 @@ const AssemblyPage = () => {
                     <span>{woodBin.name}</span>
                   </div>
                 </div>
-                <div className="flex justify-between">
+                <div>
                   <span className="font-medium">Longueur:</span>
-                  <span>{plank.length.toFixed(1)} cm</span>
+                  <span className="ml-2">{plank.length.toFixed(1)} cm</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Position X:</span>
-                  <span>{plank.positionX.toFixed(1)} cm du bord gauche</span>
+                <div>
+                  <span className="font-medium">Position horizontale:</span>
+                  <span className="ml-2">{plank.positionX.toFixed(1)} cm</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Position Y:</span>
-                  <span>{plank.positionY.toFixed(1)} cm du bord supérieur</span>
+                <div>
+                  <span className="font-medium">Position verticale:</span>
+                  <span className="ml-2">{plank.positionY.toFixed(1)} cm</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-center mt-8 mb-4">
-              <div className="w-80 h-12 bg-gray-200 relative">
-                <div className="h-full border-r-2 border-black absolute" style={{ left: `${(currentPlank+1) / totalPlanks * 100}%` }}></div>
-                
-                <div className="absolute top-0 left-0 text-xs">Début</div>
-                <div className="absolute top-0 right-0 text-xs">Fin</div>
-                
-                <div className="absolute bottom-0 left-0 right-0 text-center text-sm">
-                  Progression: planche {currentPlank + 1}/{totalPlanks}
-                </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Début</span>
+                <span>Progression: {progress}%</span>
+                <span>Fin</span>
               </div>
+              <Progress value={progress} className="h-3" />
             </div>
           </div>
         </CardContent>
