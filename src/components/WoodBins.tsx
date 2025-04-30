@@ -24,9 +24,15 @@ const WoodBins: React.FC<WoodBinsProps> = ({ bins, onChange }) => {
   const updateBin = (index: number, field: keyof WoodBin, value: string | number) => {
     const updatedBins = [...editedBins];
     if (field === 'proportion') {
-      updatedBins[index][field] = parseFloat(value as string) || 0;
+      updatedBins[index][field] = Number(value) || 0;
+    } else if (field === 'name' || field === 'color') {
+      updatedBins[index][field] = String(value);
     } else {
-      updatedBins[index][field] = value;
+      // For 'id' field or any future fields
+      updatedBins[index] = {
+        ...updatedBins[index],
+        [field]: value
+      };
     }
     setEditedBins(updatedBins);
   };
