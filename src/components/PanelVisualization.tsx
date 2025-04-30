@@ -1,7 +1,9 @@
 
 import React, { useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Panel, Plank } from '@/utils/panelGenerator';
+import { Button } from "@/components/ui/button";
+import { useNavigate } from 'react-router-dom';
+import { Panel } from '@/utils/panelGenerator';
 
 interface PanelVisualizationProps {
   panel: Panel | null;
@@ -9,6 +11,7 @@ interface PanelVisualizationProps {
 
 const PanelVisualization: React.FC<PanelVisualizationProps> = ({ panel }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const navigate = useNavigate();
   
   // Rendu du panneau sur le canvas
   useEffect(() => {
@@ -22,90 +25,65 @@ const PanelVisualization: React.FC<PanelVisualizationProps> = ({ panel }) => {
     
     // Dimensions du canvas
     const canvasWidth = canvas.width;
-    const scaleFactor = canvasWidth / panel.length;
-    const displayHeight = Math.min(100, panel.width * scaleFactor);
+    const canvasHeight = 400; // hauteur fixe
+    
+    // Calculer les facteurs d'échelle pour adapter le panneau au canvas
+    const scaleX = canvasWidth / panel.length;
+    const scaleY = canvasHeight / panel.width;
+    
+    // Utiliser le plus petit des deux pour conserver les proportions
+    const scale = Math.min(scaleX, scaleY);
+    
+    // Dimensions réelles du dessin
+    const drawWidth = panel.length * scale;
+    const drawHeight = panel.width * scale;
+    
+    // Centrer le panneau dans le canvas
+    const offsetX = (canvasWidth - drawWidth) / 2;
+    const offsetY = (canvasHeight - drawHeight) / 2;
     
     // Ajuster la hauteur du canvas
-    canvas.height = displayHeight + 40; // Hauteur + espace pour les graduations
+    canvas.height = canvasHeight;
     
     // Effacer le canvas
-    ctx.clearRect(0, 0, canvasWidth, canvas.height);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     
-    // Dessiner le fond
+    // Dessiner l'arrière-plan du panneau
     ctx.fillStyle = '#f8f8f8';
-    ctx.fillRect(0, 0, canvasWidth, displayHeight);
-    ctx.strokeStyle = '#ddd';
-    ctx.strokeRect(0, 0, canvasWidth, displayHeight);
+    ctx.fillRect(offsetX, offsetY, drawWidth, drawHeight);
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(offsetX, offsetY, drawWidth, drawHeight);
     
     // Dessiner chaque planche
     panel.planks.forEach((plank) => {
       // Calculer la position et la taille
-      const x = plank.position * scaleFactor;
-      const width = plank.length * scaleFactor;
+      const x = offsetX + plank.positionX * scale;
+      const y = offsetY + plank.positionY * scale;
+      const width = plank.length * scale;
+      const height = plank.width * scale;
       
       // Dessiner la planche
       ctx.fillStyle = plank.color;
-      ctx.fillRect(x, 0, width, displayHeight);
+      ctx.fillRect(x, y, width, height);
       
       // Ajouter la bordure
       ctx.strokeStyle = '#333';
       ctx.lineWidth = 1;
-      ctx.strokeRect(x, 0, width, displayHeight);
+      ctx.strokeRect(x, y, width, height);
       
       // Ajouter un numéro sur la planche si assez large
-      if (width > 30) {
+      if (width > 20 && height > 15) {
         ctx.fillStyle = getContrastColor(plank.color);
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(`${plank.id}`, x + width / 2, displayHeight / 2);
+        ctx.fillText(`${plank.id}`, x + width / 2, y + height / 2);
       }
     });
     
-    // Dessiner l'échelle (graduations)
-    drawScale(ctx, panel.length, canvasWidth, displayHeight);
-    
   }, [panel]);
-  
-  // Fonction pour dessiner l'échelle (graduations)
-  const drawScale = (
-    ctx: CanvasRenderingContext2D, 
-    totalLength: number, 
-    canvasWidth: number, 
-    displayHeight: number
-  ) => {
-    ctx.fillStyle = '#555';
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 1;
-    ctx.font = '10px Arial';
-    ctx.textAlign = 'center';
-    
-    // Ligne horizontale de l'échelle
-    ctx.beginPath();
-    ctx.moveTo(0, displayHeight + 10);
-    ctx.lineTo(canvasWidth, displayHeight + 10);
-    ctx.stroke();
-    
-    // Déterminer l'intervalle des graduations
-    let interval = 10; // cm
-    if (totalLength > 200) interval = 50;
-    else if (totalLength > 100) interval = 20;
-    
-    // Dessiner les graduations
-    for (let i = 0; i <= totalLength; i += interval) {
-      const x = (i / totalLength) * canvasWidth;
-      
-      // Graduation
-      ctx.beginPath();
-      ctx.moveTo(x, displayHeight + 5);
-      ctx.lineTo(x, displayHeight + 15);
-      ctx.stroke();
-      
-      // Étiquette
-      ctx.fillText(`${i}`, x, displayHeight + 25);
-    }
-  };
-  
+
   // Obtenir une couleur contrastante pour le texte
   const getContrastColor = (hexColor: string): string => {
     // Convertir la couleur hex en RGB
@@ -125,37 +103,42 @@ const PanelVisualization: React.FC<PanelVisualizationProps> = ({ panel }) => {
     if (!panel) return null;
     
     const totalPlanks = panel.planks.length;
-    const binCounts: Record<number, number> = {};
-    const binLengths: Record<number, number> = {};
+    const totalArea = panel.planks.reduce((sum, p) => sum + (p.width * p.length), 0);
     
-    // Calculer les statistiques
+    // Calculer les statistiques par bac
+    const binStats: Record<number, { count: number, area: number }> = {};
+    
     panel.planks.forEach(plank => {
-      binCounts[plank.binId] = (binCounts[plank.binId] || 0) + 1;
-      binLengths[plank.binId] = (binLengths[plank.binId] || 0) + plank.length;
-    });
-    
-    // Calculer la proportion par bac
-    const totalLength = panel.planks.reduce((sum, p) => sum + p.length, 0);
-    const binProportions: Record<number, number> = {};
-    
-    Object.entries(binLengths).forEach(([binId, length]) => {
-      binProportions[binId] = (length / totalLength) * 100;
+      const binId = plank.binId;
+      if (!binStats[binId]) {
+        binStats[binId] = { count: 0, area: 0 };
+      }
+      binStats[binId].count += 1;
+      binStats[binId].area += (plank.width * plank.length);
     });
     
     return {
       totalPlanks,
-      binCounts,
-      binLengths,
-      binProportions
+      totalArea,
+      binStats
     };
   };
 
   const summary = getPanelSummary();
+  
+  const goToAssemblyPage = () => {
+    navigate('/assembly');
+  };
 
   return (
     <Card className="mb-6">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Visualisation du Panneau</CardTitle>
+        {panel && panel.planks.length > 0 && (
+          <Button onClick={goToAssemblyPage}>
+            Voir les instructions d'assemblage
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         {!panel || panel.planks.length === 0 ? (
@@ -169,8 +152,8 @@ const PanelVisualization: React.FC<PanelVisualizationProps> = ({ panel }) => {
               <canvas 
                 ref={canvasRef} 
                 width={800} 
-                height={150}
-                className="w-full h-auto"
+                height={400}
+                className="w-full h-auto border rounded"
               />
             </div>
             

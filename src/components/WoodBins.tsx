@@ -27,8 +27,10 @@ const WoodBins: React.FC<WoodBinsProps> = ({ bins, onChange }) => {
       updatedBins[index][field] = Number(value) || 0;
     } else if (field === 'name' || field === 'color') {
       updatedBins[index][field] = String(value);
+    } else if (field === 'id') {
+      updatedBins[index][field] = Number(value);
     } else {
-      // For 'id' field or any future fields
+      // Si jamais on ajoute d'autres champs à l'avenir
       updatedBins[index] = {
         ...updatedBins[index],
         [field]: value

@@ -23,7 +23,6 @@ import {
 import PanelParameters from '@/components/PanelParameters';
 import WoodBins from '@/components/WoodBins';
 import PanelVisualization from '@/components/PanelVisualization';
-import AssemblyInstructions from '@/components/AssemblyInstructions';
 
 const Index = () => {
   const { toast } = useToast();
@@ -32,6 +31,8 @@ const Index = () => {
   const [params, setParams] = useState<PanelParams>({
     minPlankLength: 20,
     maxPlankLength: 100,
+    minPlankWidth: 5,
+    maxPlankWidth: 20,
     panelWidth: 60,
     panelLength: 200,
     woodBins: [
@@ -312,10 +313,9 @@ const Index = () => {
           <WoodBins bins={params.woodBins} onChange={handleWoodBinsUpdate} />
         </div>
         
-        {/* Colonne de droite: Visualisation et Instructions */}
+        {/* Colonne de droite: Visualisation */}
         <div className="md:col-span-2 space-y-6">
           <PanelVisualization panel={panel} />
-          <AssemblyInstructions panel={panel} woodBins={params.woodBins} />
         </div>
       </div>
     </div>
