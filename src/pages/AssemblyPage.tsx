@@ -7,6 +7,7 @@ import { Panel } from '@/utils/panelGenerator';
 import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { loadCurrentPanel, loadCurrentParams } from '@/utils/storage';
 import { Progress } from "@/components/ui/progress";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const AssemblyPage = () => {
   const [panel, setPanel] = useState<Panel | null>(null);
@@ -14,6 +15,7 @@ const AssemblyPage = () => {
   const [currentPlank, setCurrentPlank] = useState<number>(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     // Charger le panneau et les paramètres depuis le stockage local
@@ -84,6 +86,20 @@ const AssemblyPage = () => {
     });
   }, [panel, currentPlank]);
 
+  // Calcul du nombre de planches par bac
+  const getBinPlankCounts = () => {
+    if (!panel) return {};
+    
+    const counts: Record<number, number> = {};
+    panel.planks.forEach(plank => {
+      counts[plank.binId] = (counts[plank.binId] || 0) + 1;
+    });
+    
+    return counts;
+  };
+
+  const plankCounts = getBinPlankCounts();
+
   const goToNextPlank = () => {
     if (panel && currentPlank < panel.planks.length - 1) {
       setCurrentPlank(currentPlank + 1);
@@ -102,15 +118,15 @@ const AssemblyPage = () => {
   
   if (!panel || panel.planks.length === 0) {
     return (
-      <div className="container py-8">
+      <div className="container py-4">
         <Card>
           <CardHeader>
             <CardTitle>Instructions d'assemblage</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
             <p className="mb-4">Aucun panneau généré. Veuillez d'abord générer un panneau.</p>
-            <Button onClick={goToHomePage}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
+            <Button onClick={goToHomePage} size="lg">
+              <ArrowLeft className="h-5 w-5 mr-2" />
               Retour à la conception
             </Button>
           </CardContent>
@@ -134,75 +150,79 @@ const AssemblyPage = () => {
     panel.planks[currentPlank].positionY !== panel.planks[currentPlank - 1].positionY;
   
   return (
-    <div className="container py-8">
+    <div className={`container ${isMobile ? 'py-2 px-2' : 'py-6'}`}>
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">Instructions d'assemblage</h1>
-        <Button variant="outline" onClick={goToHomePage}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour à la conception
+        <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>Instructions d'assemblage</h1>
+        <Button variant="outline" onClick={goToHomePage} size={isMobile ? "sm" : "default"}>
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Retour
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
-          <Card className="shadow-md">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex justify-between">
-                <span>Étape {currentPlank + 1} sur {totalPlanks}</span>
+      {/* Interface plus simple pour tablette tactile */}
+      <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 md:grid-cols-3 gap-6'}`}>
+        <div className={isMobile ? "" : "md:col-span-2"}>
+          <Card className="shadow-md mb-3">
+            <CardHeader className="pb-1">
+              <CardTitle className="flex justify-between items-center">
+                <span>Étape {currentPlank + 1}/{totalPlanks}</span>
                 <div className="flex items-center space-x-2">
                   <Button 
                     variant="outline" 
-                    size="sm" 
+                    size="icon"
                     onClick={goToPreviousPlank}
                     disabled={currentPlank === 0}
+                    className="h-10 w-10"
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    Précédent
+                    <ChevronLeft className="h-6 w-6" />
                   </Button>
                   <Button 
                     variant="outline" 
-                    size="sm" 
+                    size="icon"
                     onClick={goToNextPlank}
                     disabled={currentPlank === totalPlanks - 1}
+                    className="h-10 w-10"
                   >
-                    Suivant
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-6 w-6" />
                   </Button>
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div className="bg-wood-muted p-6 rounded-lg border">
+              <div className="space-y-4">
+                <div className="bg-wood-muted p-4 rounded-lg border">
                   {isNewRow && (
-                    <div className="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded-md font-medium">
-                      NOUVELLE RANGÉE : Passez à la rangée suivante !
+                    <div className="mb-3 p-3 bg-yellow-100 text-yellow-800 rounded-md font-medium text-center text-lg">
+                      NOUVELLE RANGÉE !
                     </div>
                   )}
                   
-                  <h3 className="text-xl font-medium mb-4">Planche #{plank.id}</h3>
-                  <div className="grid grid-cols-2 gap-4 text-lg">
+                  <div className="grid grid-cols-1 gap-4">
                     <div className="flex items-center">
-                      <span className="font-medium mr-2">Bac:</span>
-                      <div className="flex items-center">
-                        <div 
-                          className="w-6 h-6 rounded-full mr-2" 
-                          style={{ backgroundColor: woodBin.color }}
-                        />
-                        <span>{woodBin.name}</span>
+                      <div 
+                        className="w-8 h-8 rounded-full mr-3 flex-shrink-0" 
+                        style={{ backgroundColor: woodBin.color }}
+                      />
+                      <span className="text-xl font-medium">{woodBin.name}</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-lg">
+                      <div>
+                        <span className="font-medium block text-sm">Longueur</span>
+                        <span>{plank.length.toFixed(1)} cm</span>
                       </div>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="font-medium mr-2">Longueur:</span>
-                      <span>{plank.length.toFixed(1)} cm</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="font-medium mr-2">Position:</span>
-                      <span>{plank.positionX.toFixed(1)} cm du bord gauche</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="font-medium mr-2">Hauteur:</span>
-                      <span>{plank.positionY.toFixed(1)} cm du haut</span>
+                      <div>
+                        <span className="font-medium block text-sm">Position</span>
+                        <span>À {plank.positionX.toFixed(1)} cm du bord</span>
+                      </div>
+                      <div>
+                        <span className="font-medium block text-sm">Rangée</span>
+                        <span>#{Math.floor(plank.positionY / plank.width) + 1}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium block text-sm">ID Planche</span>
+                        <span>#{plank.id}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -210,23 +230,23 @@ const AssemblyPage = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Début</span>
-                    <span>Progression: {progress}%</span>
+                    <span>{progress}%</span>
                     <span>Fin</span>
                   </div>
-                  <Progress value={progress} className="h-3" />
+                  <Progress value={progress} className="h-4" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
         
-        <div className="md:col-span-1">
+        <div className={isMobile ? "" : "md:col-span-1"}>
           <Card className="shadow-md h-full">
-            <CardHeader>
-              <CardTitle>Progression de l'assemblage</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-center">Progression</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center">
-              <div className="w-full aspect-[4/3] relative mb-4">
+            <CardContent className="flex flex-col items-center">
+              <div className="w-full aspect-[4/3] relative mb-3">
                 <canvas 
                   ref={canvasRef} 
                   width={400}
@@ -234,12 +254,36 @@ const AssemblyPage = () => {
                   className="w-full h-full border rounded"
                 />
               </div>
-              <div className="text-center text-sm text-muted-foreground">
+              <div className="text-center text-sm mb-2">
                 <p>Planches assemblées: {currentPlank + 1} / {totalPlanks}</p>
-                <p className="mt-2">
-                  <span className="inline-block w-3 h-3 bg-wood-accent mr-1"></span> Assemblées
-                  <span className="inline-block w-3 h-3 bg-gray-300 ml-4 mr-1"></span> À assembler
-                </p>
+              </div>
+
+              {/* Récapitulatif des bacs */}
+              <div className="w-full border-t pt-3 mt-2">
+                <h4 className="font-medium text-center mb-2">Planches par bac</h4>
+                <div className="space-y-2 w-full">
+                  {woodBins.map(bin => {
+                    const count = plankCounts[bin.id] || 0;
+                    const usedCount = panel.planks
+                      .filter(p => p.binId === bin.id && panel.planks.indexOf(p) <= currentPlank)
+                      .length;
+                    
+                    return (
+                      <div key={bin.id} className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div 
+                            className="w-4 h-4 rounded-full mr-2" 
+                            style={{ backgroundColor: bin.color }}
+                          />
+                          <span>{bin.name}</span>
+                        </div>
+                        <span className="font-medium">
+                          {usedCount}/{count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </CardContent>
           </Card>
