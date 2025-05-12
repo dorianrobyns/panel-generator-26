@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { Panel } from '@/utils/panelGenerator';
 import { loadCurrentParams } from '@/utils/storage';
 import PanelVisualizationStats from './PanelVisualizationStats';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ZoomIn, ZoomOut } from 'lucide-react';
 
 interface PanelVisualizationProps {
   panel: Panel | null;
@@ -16,10 +17,19 @@ const PanelVisualization: React.FC<PanelVisualizationProps> = ({ panel }) => {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
+  const [zoomLevel, setZoomLevel] = useState(1);
   
   // Charger les paramètres pour les bacs
   const params = loadCurrentParams();
   const woodBins = params?.woodBins || [];
+  
+  const handleZoomIn = () => {
+    setZoomLevel(Math.min(zoomLevel + 0.25, 3));
+  };
+  
+  const handleZoomOut = () => {
+    setZoomLevel(Math.max(zoomLevel - 0.25, 0.5));
+  };
   
   useEffect(() => {
     if (!panel || !canvasRef.current) return;
@@ -37,7 +47,10 @@ const PanelVisualization: React.FC<PanelVisualizationProps> = ({ panel }) => {
     const scaleY = canvasHeight / panel.width;
     
     // Utiliser le plus petit des deux pour conserver les proportions
-    const scale = Math.min(scaleX, scaleY);
+    const baseScale = Math.min(scaleX, scaleY);
+    
+    // Appliquer le zoom
+    const scale = baseScale * zoomLevel;
     
     // Dimensions réelles du dessin
     const drawWidth = panel.length * scale;
@@ -70,16 +83,16 @@ const PanelVisualization: React.FC<PanelVisualizationProps> = ({ panel }) => {
       ctx.lineWidth = 1;
       ctx.strokeRect(x, y, width, height);
     });
-  }, [panel]);
+  }, [panel, zoomLevel]);
   
   if (!panel) {
     return (
-      <Card className="h-full">
+      <Card className="h-full shadow-md">
         <CardHeader>
-          <CardTitle>Visualisation du panneau</CardTitle>
+          <CardTitle className="text-2xl">Visualisation du panneau</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center h-64">
-          <p className="text-center text-muted-foreground mb-4">
+          <p className="text-center text-muted-foreground mb-4 text-lg">
             Aucun panneau généré. Configurez les paramètres et générez un panneau.
           </p>
         </CardContent>
@@ -88,25 +101,50 @@ const PanelVisualization: React.FC<PanelVisualizationProps> = ({ panel }) => {
   }
   
   return (
-    <Card>
+    <Card className="shadow-md">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className={isMobile ? "text-base" : "text-lg"}>Visualisation du panneau</CardTitle>
-        <Button 
-          onClick={() => navigate('/assembly')}
-          variant="default"
-          size={isMobile ? "sm" : "default"}
-          className="font-medium"
-        >
-          Instructions d'assemblage
-        </Button>
+        <CardTitle className="text-2xl">Visualisation du panneau</CardTitle>
+        <div className="flex items-center gap-2">
+          <div className="bg-muted rounded-lg p-1 flex items-center mr-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleZoomOut} 
+              disabled={zoomLevel <= 0.5}
+              className="h-12 w-12 rounded-l-lg rounded-r-none border-r"
+            >
+              <ZoomOut className="h-6 w-6" />
+            </Button>
+            <div className="px-2 font-medium text-lg">
+              {Math.round(zoomLevel * 100)}%
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleZoomIn} 
+              disabled={zoomLevel >= 3}
+              className="h-12 w-12 rounded-r-lg rounded-l-none border-l"
+            >
+              <ZoomIn className="h-6 w-6" />
+            </Button>
+          </div>
+          <Button 
+            onClick={() => navigate('/assembly')}
+            variant="default"
+            size="lg"
+            className="font-medium text-lg h-12"
+          >
+            Instructions d'assemblage
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className={`pt-4 ${isMobile ? 'px-2' : 'px-6'}`}>
-        <div className="border rounded-lg p-2 bg-background shadow-sm">
+      <CardContent className="pt-4 px-4">
+        <div className="border rounded-lg p-2 bg-background shadow-sm mb-4">
           <canvas 
             ref={canvasRef} 
             width={600}
             height={300}
-            className="w-full"
+            className="w-full touch-pan-y touch-pinch-zoom"
           />
         </div>
         

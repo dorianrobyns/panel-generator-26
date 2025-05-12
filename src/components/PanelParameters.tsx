@@ -20,65 +20,70 @@ const PanelParameters: React.FC<PanelParametersProps> = ({ params, onChange, onG
   };
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-6 shadow-md">
       <CardHeader>
-        <CardTitle>Paramètres du Panneau</CardTitle>
+        <CardTitle className="text-2xl">Paramètres du Panneau</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-6">
             <div>
-              <Label htmlFor="minPlankLength">Longueur min. des planches (cm)</Label>
+              <Label htmlFor="minPlankLength" className="text-lg mb-2 block">Longueur min. des planches (cm)</Label>
               <Input
                 id="minPlankLength"
                 type="number"
                 min="5"
                 value={params.minPlankLength}
                 onChange={(e) => updateParam('minPlankLength', parseFloat(e.target.value) || 0)}
+                className="h-14 text-xl"
               />
             </div>
             <div>
-              <Label htmlFor="maxPlankLength">Longueur max. des planches (cm)</Label>
+              <Label htmlFor="maxPlankLength" className="text-lg mb-2 block">Longueur max. des planches (cm)</Label>
               <Input
                 id="maxPlankLength"
                 type="number"
                 min={params.minPlankLength + 1}
                 value={params.maxPlankLength}
                 onChange={(e) => updateParam('maxPlankLength', parseFloat(e.target.value) || 0)}
+                className="h-14 text-xl"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="plankWidth">Largeur des planches (cm)</Label>
+            <Label htmlFor="plankWidth" className="text-lg mb-2 block">Largeur des planches (cm)</Label>
             <Input
               id="plankWidth"
               type="number"
               min="2"
               value={params.plankWidth || 10}
               onChange={(e) => updateParam('plankWidth', parseFloat(e.target.value) || 0)}
+              className="h-14 text-xl"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-6">
             <div>
-              <Label htmlFor="panelWidth">Largeur du panneau (cm)</Label>
+              <Label htmlFor="panelWidth" className="text-lg mb-2 block">Largeur du panneau (cm)</Label>
               <Input
                 id="panelWidth"
                 type="number"
                 min="10"
                 value={params.panelWidth}
                 onChange={(e) => updateParam('panelWidth', parseFloat(e.target.value) || 0)}
+                className="h-14 text-xl"
               />
             </div>
             <div>
-              <Label htmlFor="panelLength">Longueur du panneau (cm)</Label>
+              <Label htmlFor="panelLength" className="text-lg mb-2 block">Longueur du panneau (cm)</Label>
               <Input
                 id="panelLength"
                 type="number"
                 min="10"
                 value={params.panelLength}
                 onChange={(e) => updateParam('panelLength', parseFloat(e.target.value) || 0)}
+                className="h-14 text-xl"
               />
             </div>
           </div>
@@ -86,7 +91,7 @@ const PanelParameters: React.FC<PanelParametersProps> = ({ params, onChange, onG
           <Button
             onClick={onGenerate}
             disabled={isGenerating}
-            className="w-full bg-wood-dark hover:bg-wood-darker text-white mt-4"
+            className="w-full bg-wood-dark hover:bg-wood-darker text-white mt-8 text-xl py-8"
           >
             {isGenerating ? "Génération en cours..." : "Générer un panneau"}
           </Button>

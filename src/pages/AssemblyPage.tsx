@@ -2,11 +2,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Panel } from '@/utils/panelGenerator';
 import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { loadCurrentPanel, loadCurrentParams } from '@/utils/storage';
-import { Progress } from "@/components/ui/progress";
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const AssemblyPage = () => {
@@ -120,13 +119,10 @@ const AssemblyPage = () => {
     return (
       <div className="container py-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Instructions d'assemblage</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="mb-4">Aucun panneau généré. Veuillez d'abord générer un panneau.</p>
-            <Button onClick={goToHomePage} size="lg">
-              <ArrowLeft className="h-5 w-5 mr-2" />
+          <CardContent className="text-center py-10">
+            <p className="mb-4 text-lg">Aucun panneau généré. Veuillez d'abord générer un panneau.</p>
+            <Button onClick={goToHomePage} size="lg" className="text-lg py-6 px-8">
+              <ArrowLeft className="h-6 w-6 mr-2" />
               Retour à la conception
             </Button>
           </CardContent>
@@ -143,151 +139,89 @@ const AssemblyPage = () => {
   };
   
   const totalPlanks = panel.planks.length;
-  const progress = Math.round((currentPlank + 1) / totalPlanks * 100);
   
   // Déterminer si c'est une nouvelle rangée
   const isNewRow = currentPlank > 0 && 
     panel.planks[currentPlank].positionY !== panel.planks[currentPlank - 1].positionY;
   
   return (
-    <div className={`container ${isMobile ? 'py-2 px-2' : 'py-6'}`}>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>Instructions d'assemblage</h1>
-        <Button variant="outline" onClick={goToHomePage} size={isMobile ? "sm" : "default"}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
+    <div className="flex flex-col h-screen">
+      {/* Header */}
+      <div className="flex justify-between items-center p-4 border-b">
+        <Button variant="ghost" onClick={goToHomePage} size="lg" className="text-lg">
+          <ArrowLeft className="h-5 w-5 mr-2" />
           Retour
         </Button>
+        <h1 className="text-2xl font-bold">
+          Planche {currentPlank + 1}/{totalPlanks}
+        </h1>
+        <div className="w-20"></div> {/* Placeholder for balance */}
       </div>
       
-      {/* Interface plus simple pour tablette tactile */}
-      <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 md:grid-cols-3 gap-6'}`}>
-        <div className={isMobile ? "" : "md:col-span-2"}>
-          <Card className="shadow-md mb-3">
-            <CardHeader className="pb-1">
-              <CardTitle className="flex justify-between items-center">
-                <span>Étape {currentPlank + 1}/{totalPlanks}</span>
-                <div className="flex items-center space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    onClick={goToPreviousPlank}
-                    disabled={currentPlank === 0}
-                    className="h-10 w-10"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    onClick={goToNextPlank}
-                    disabled={currentPlank === totalPlanks - 1}
-                    className="h-10 w-10"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="bg-wood-muted p-4 rounded-lg border">
-                  {isNewRow && (
-                    <div className="mb-3 p-3 bg-yellow-100 text-yellow-800 rounded-md font-medium text-center text-lg">
-                      NOUVELLE RANGÉE !
-                    </div>
-                  )}
-                  
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="flex items-center">
-                      <div 
-                        className="w-8 h-8 rounded-full mr-3 flex-shrink-0" 
-                        style={{ backgroundColor: woodBin.color }}
-                      />
-                      <span className="text-xl font-medium">{woodBin.name}</span>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-lg">
-                      <div>
-                        <span className="font-medium block text-sm">Longueur</span>
-                        <span>{plank.length.toFixed(1)} cm</span>
-                      </div>
-                      <div>
-                        <span className="font-medium block text-sm">Position</span>
-                        <span>À {plank.positionX.toFixed(1)} cm du bord</span>
-                      </div>
-                      <div>
-                        <span className="font-medium block text-sm">Rangée</span>
-                        <span>#{Math.floor(plank.positionY / plank.width) + 1}</span>
-                      </div>
-                      <div>
-                        <span className="font-medium block text-sm">ID Planche</span>
-                        <span>#{plank.id}</span>
-                      </div>
-                    </div>
+      {/* Main content */}
+      <div className="flex-grow p-4 flex flex-col">
+        {/* Essential info card */}
+        <Card className="mb-4 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center mb-4">
+              <div 
+                className="w-12 h-12 rounded-full mr-4 flex-shrink-0 border-2 border-gray-300" 
+                style={{ backgroundColor: woodBin.color }}
+              />
+              <div>
+                <h2 className="text-3xl font-bold">{woodBin.name}</h2>
+                {isNewRow && (
+                  <div className="mt-2 p-2 bg-yellow-100 text-yellow-800 rounded-md font-bold text-xl uppercase">
+                    Nouvelle rangée!
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Début</span>
-                    <span>{progress}%</span>
-                    <span>Fin</span>
-                  </div>
-                  <Progress value={progress} className="h-4" />
-                </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-5xl font-bold my-6">
+                {plank.length.toFixed(1)} cm
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
-        <div className={isMobile ? "" : "md:col-span-1"}>
-          <Card className="shadow-md h-full">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-center">Progression</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center">
-              <div className="w-full aspect-[4/3] relative mb-3">
-                <canvas 
-                  ref={canvasRef} 
-                  width={400}
-                  height={300}
-                  className="w-full h-full border rounded"
-                />
-              </div>
-              <div className="text-center text-sm mb-2">
-                <p>Planches assemblées: {currentPlank + 1} / {totalPlanks}</p>
-              </div>
-
-              {/* Récapitulatif des bacs */}
-              <div className="w-full border-t pt-3 mt-2">
-                <h4 className="font-medium text-center mb-2">Planches par bac</h4>
-                <div className="space-y-2 w-full">
-                  {woodBins.map(bin => {
-                    const count = plankCounts[bin.id] || 0;
-                    const usedCount = panel.planks
-                      .filter(p => p.binId === bin.id && panel.planks.indexOf(p) <= currentPlank)
-                      .length;
-                    
-                    return (
-                      <div key={bin.id} className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div 
-                            className="w-4 h-4 rounded-full mr-2" 
-                            style={{ backgroundColor: bin.color }}
-                          />
-                          <span>{bin.name}</span>
-                        </div>
-                        <span className="font-medium">
-                          {usedCount}/{count}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Minimap panel visualization */}
+        <div className="flex justify-center mb-8">
+          <div className="w-full max-w-md">
+            <canvas 
+              ref={canvasRef} 
+              width={400}
+              height={200}
+              className="w-full border rounded-lg shadow-sm"
+            />
+            <div className="mt-2 text-center text-sm text-gray-500">
+              {currentPlank + 1} / {totalPlanks} planches assemblées
+            </div>
+          </div>
         </div>
+      </div>
+      
+      {/* Fixed navigation buttons at bottom */}
+      <div className="grid grid-cols-2 fixed bottom-0 left-0 right-0 h-24 border-t bg-background/90 backdrop-blur-sm">
+        <Button
+          variant="ghost"
+          onClick={goToPreviousPlank}
+          disabled={currentPlank === 0}
+          className="h-full rounded-none text-2xl font-bold border-r"
+        >
+          <ChevronLeft className="h-8 w-8 mr-2" />
+          Précédent
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={goToNextPlank}
+          disabled={currentPlank === totalPlanks - 1}
+          className="h-full rounded-none text-2xl font-bold"
+        >
+          Suivant
+          <ChevronRight className="h-8 w-8 ml-2" />
+        </Button>
       </div>
     </div>
   );

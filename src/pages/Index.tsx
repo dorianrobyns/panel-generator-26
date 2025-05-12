@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +17,7 @@ import {
   deleteProject,
   SavedProject
 } from '@/utils/storage';
+import { Save, Folder } from 'lucide-react';
 
 // Composants
 import PanelParameters from '@/components/PanelParameters';
@@ -199,106 +199,111 @@ const Index = () => {
   };
 
   return (
-    <div className="container py-8">
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-wood-dark mb-2">Générateur de Panneaux</h1>
-        <p className="text-lg text-muted-foreground">
-          Créez et visualisez des panneaux de bois lamellé-collé pour vos projets de menuiserie
-        </p>
-      </div>
-      
-      {/* Actions rapides */}
-      <div className="flex justify-center mb-8 space-x-4">
-        <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="lg">
-              Sauvegarder le projet
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Sauvegarder le projet</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="project-name">Nom du projet</Label>
-                <Input
-                  id="project-name"
-                  placeholder="Mon projet de panneau"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                />
-              </div>
-              
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
-                  Annuler
-                </Button>
-                <Button onClick={handleSaveProject}>
-                  Sauvegarder
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+    <div className="container py-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-wood-dark">Générateur de Panneaux</h1>
         
-        <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="lg">
-              Charger un projet
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-xl">
-            <DialogHeader>
-              <DialogTitle>Charger un projet</DialogTitle>
-            </DialogHeader>
-            <div className="max-h-[60vh] overflow-y-auto">
-              {savedProjects.length === 0 ? (
-                <p className="text-center py-8 text-muted-foreground">
-                  Aucun projet sauvegardé
-                </p>
-              ) : (
+        <div className="flex items-center gap-2">
+          <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon" className="h-12 w-12">
+                <Save className="h-6 w-6" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-2xl">Sauvegarder le projet</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-6">
                 <div className="space-y-2">
-                  {savedProjects.map((project) => (
-                    <div 
-                      key={project.id}
-                      className="flex items-center justify-between p-3 border rounded-md hover:bg-muted"
-                    >
-                      <div>
-                        <p className="font-medium">{project.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatDate(project.date)}
-                        </p>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleLoadProject(project.id)}
-                        >
-                          Charger
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteProject(project.id)}
-                        >
-                          Supprimer
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                  <Label htmlFor="project-name" className="text-lg">Nom du projet</Label>
+                  <Input
+                    id="project-name"
+                    placeholder="Mon projet de panneau"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    className="h-14 text-lg"
+                  />
                 </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+                
+                <div className="flex justify-end space-x-4 mt-6">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowSaveDialog(false)}
+                    className="h-12 text-lg"
+                  >
+                    Annuler
+                  </Button>
+                  <Button 
+                    onClick={handleSaveProject}
+                    className="h-12 text-lg"
+                  >
+                    Sauvegarder
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon" className="h-12 w-12">
+                <Folder className="h-6 w-6" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="text-2xl">Charger un projet</DialogTitle>
+              </DialogHeader>
+              <div className="max-h-[70vh] overflow-y-auto py-4">
+                {savedProjects.length === 0 ? (
+                  <p className="text-center py-12 text-muted-foreground text-lg">
+                    Aucun projet sauvegardé
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {savedProjects.map((project) => (
+                      <div 
+                        key={project.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted"
+                      >
+                        <div>
+                          <p className="font-medium text-lg">{project.name}</p>
+                          <p className="text-muted-foreground">
+                            {formatDate(project.date)}
+                          </p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="lg"
+                            onClick={() => handleLoadProject(project.id)}
+                            className="h-12"
+                          >
+                            Charger
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="lg"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-12"
+                            onClick={() => handleDeleteProject(project.id)}
+                          >
+                            Supprimer
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Colonne de gauche: Paramètres */}
-        <div className="md:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-6">
           <PanelParameters 
             params={params} 
             onChange={handleParamsUpdate} 
@@ -309,7 +314,7 @@ const Index = () => {
         </div>
         
         {/* Colonne de droite: Visualisation */}
-        <div className="md:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6">
           <PanelVisualization panel={panel} />
         </div>
       </div>
